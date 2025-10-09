@@ -1,1 +1,71 @@
+import csv
+import re
+from pathlib import Path
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Load CSV responses once
+RESPONSES_FILE = Path(__file__).parent / "BDA_ChatBot.csv"
+print(f"Loading responses from: {RESPONSES_FILE.resolve()}")
+
+def load_responses():
+    data = []
+    with open(RESPONSES_FILE, newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        print(f"CSV columns: {reader.fieldnames}")
+        for row in reader:
+            data.append({
+                "question": row["question"].lower(),
+                "answer": row["answer"],
+                "url": row.get("URL", "").strip() or None
+            })
+    return data
+
+RESPONSES = load_responses()
+
+# Prepare TF-IDF vectorizer for questions
+questions = [item["question"] for item in RESPONSES]
+vectorizer = TfidfVectorizer().fit(questions)
+question_vectors = vectorizer.transform(questions)
+
+def make_links_clickable(text: str) -> str:
+    """
+    Detect any URL (http/https) in the text and convert it to clickable HTML.
+    """
+    url_pattern = r'(https?://[^\s]+)'
+    return re.sub(url_pattern, r'<a href="\1" target="_blank">\1</a>', text)
+
+def get_bot_response(user_msg: str) -> str:
+    msg = user_msg.lower()
+    
+    # Simple keyword-based responses
+    if "hello" in msg or "hi" in msg:
+        return "Hello 👋! How can I assist you with BDA services today?"
+    elif "application" in msg or "form" in msg:
+        return "You can download BDA forms from the official website or apply online."
+    elif "bye" in msg:
+        return "Goodbye! Have a great day 😊"
+
+    # TF-IDF similarity-based matching
+    msg_vector = vectorizer.transform([msg])
+    similarities = cosine_similarity(msg_vector, question_vectors)
+
+    best_index = similarities.argmax()
+    best_score = similarities[0][best_index]
+
+    # Threshold for best match
+    if best_score > 0.3:
+        response = RESPONSES[best_index]["answer"]
+        url = RESPONSES[best_index]["url"]
+
+        # Convert any URLs in response text into clickable HTML
+        response = make_links_clickable(response)
+
+        # Add extra URL from CSV if available
+        if url:
+            response += f' <br><a href="{url}" target="_blank">Click here for more details</a>'
+        
+        return response
+
+    return "I'm still learning about BDA. Please try asking something else."
 
