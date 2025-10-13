@@ -39,10 +39,12 @@ def get_bot_response(user_msg: str) -> str:
     msg = user_msg.lower()
     
     # Simple keyword-based responses
-    if "hello" in msg or "hi" in msg:
+    if "hello" in msg or "hey" in msg:
         return "Hello 👋! How can I assist you with BDA services today?"
     elif "application" in msg or "form" in msg:
         return "You can download BDA forms from the official website or apply online."
+     elif "how are you" or "aap ky kr kaam krte h" msg:
+         return "Thank you  for asking i'm very good I'm a BDA assistant i work for BDA"
     elif "bye" in msg:
         return "Goodbye! Have a great day 😊"
 
