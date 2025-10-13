@@ -43,8 +43,8 @@ def get_bot_response(user_msg: str) -> str:
         return "Hello 👋! How can I assist you with BDA services today?"
     elif "application" in msg or "form" in msg:
         return "You can download BDA forms from the official website or apply online."
-     elif "how are you" or "aap ky kr kaam krte h" msg:
-         return "Thank you  for asking i'm very good I'm a BDA assistant i work for BDA"
+    elif "how are you" or "aap ky kr kaam krte h" msg:
+        return "Thank you  for asking i'm very good I'm a BDA assistant i work for BDA"
     elif "bye" in msg:
         return "Goodbye! Have a great day 😊"
 
